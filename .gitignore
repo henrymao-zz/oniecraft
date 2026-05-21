@@ -1,0 +1,13 @@
+build/
+*.iso
+*.qcow2
+*.img
+*.bin
+*.squashfs
+*.tar
+*.tar.bz2
+*.deb
+*.log
+*.swp
+*~
+.opencode/
