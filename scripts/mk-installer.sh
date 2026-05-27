@@ -7,6 +7,8 @@ ROOTFS=""
 KERNEL_DIR=""
 NOS_NAME=""
 NOS_VERSION=""
+GIT_BRANCH=""
+GIT_REV=""
 PART_SIZE=""
 OUTPUT=""
 
@@ -18,6 +20,8 @@ while [[ $# -gt 0 ]]; do
         --kernel-dir) KERNEL_DIR="$2"; shift 2 ;;
         --nos-name) NOS_NAME="$2"; shift 2 ;;
         --nos-version) NOS_VERSION="$2"; shift 2 ;;
+        --git-branch) GIT_BRANCH="$2"; shift 2 ;;
+        --git-rev) GIT_REV="$2"; shift 2 ;;
         --part-size) PART_SIZE="$2"; shift 2 ;;
         --output) OUTPUT="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -28,6 +32,8 @@ done
 : "${BOOTLOADER:=grub}"
 : "${NOS_NAME:=ONIECraft}"
 : "${NOS_VERSION:=1.0.0}"
+: "${GIT_BRANCH:=unknown}"
+: "${GIT_REV:=unknown}"
 : "${PART_SIZE:=4096}"
 : "${KERNEL_DIR:=build/kernel}"
 
@@ -186,7 +192,7 @@ blk_dev=$(blkid | grep ONIE-BOOT | awk '{print $1}' | sed -e 's/[1-9][0-9]*:.*$/
 [ -b "$blk_dev" ] || { echo "Error: Unable to find ONIE block device"; exit 1; }
 
 PART_SIZE=${PART_SIZE:-4096}
-demo_volume_label="ONIE-DEMO-OS"
+demo_volume_label="UBUNTU-NOS"
 
 if [ -d "/sys/firmware/efi/efivars" ]; then
     firmware="uefi"
@@ -329,13 +335,13 @@ if [ "\${onie_entry}" ]; then
    save_env onie_entry next_entry
 fi
 
-menuentry '$demo_volume_label' --unrestricted {
-        search --no-floppy --label --set=root $demo_volume_label
+menuentry 'Ubuntu NOS' --unrestricted {
+        search --no-floppy --label --set=root UBUNTU-NOS
         echo    'Loading kernel ...'
         insmod gzio
         insmod part_msdos
         insmod ext2
-        linux   /boot/vmlinuz root=LABEL=$demo_volume_label rw $GRUB_CMDLINE_LINUX DEMO_TYPE=OS
+        linux   /boot/vmlinuz root=LABEL=UBUNTU-NOS rw $GRUB_CMDLINE_LINUX DEMO_TYPE=OS
         echo    'Loading initial ramdisk ...'
         initrd  /boot/initrd.img
 }
@@ -375,6 +381,8 @@ platform=$NOS_NAME-$ARCH
 nos_name=$NOS_NAME
 nos_version=$NOS_VERSION
 nos_arch=$ARCH
+git_branch=$GIT_BRANCH
+git_rev=$GIT_REV
 part_size=$PART_SIZE
 EOF
 

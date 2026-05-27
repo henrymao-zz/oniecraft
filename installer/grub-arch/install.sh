@@ -11,7 +11,7 @@ blk_dev=$(blkid | grep ONIE-BOOT | awk '{print $1}' | sed -e 's/[1-9][0-9]*:.*$/
 [ -b "$blk_dev" ] || { echo "Error: Unable to find ONIE block device"; exit 1; }
 
 demo_type="%%DEMO_TYPE%%"
-demo_volume_label="ONIE-DEMO-${demo_type}"
+demo_volume_label="UBUNTU-NOS"
 
 if [ -d "/sys/firmware/efi/efivars" ] ; then
     firmware="uefi"
@@ -190,7 +190,7 @@ fi
 EOF
 
 # NOS menu entry
-nos_menuentry="$demo_volume_label"
+nos_menuentry="${nos_name} NOS ${git_branch:-} ${git_rev:-}"
 cat <<EOF >> $grub_cfg
 menuentry '${nos_menuentry}' --unrestricted {
         search --no-floppy --label --set=root $demo_volume_label

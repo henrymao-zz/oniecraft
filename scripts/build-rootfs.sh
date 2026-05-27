@@ -124,7 +124,8 @@ sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
     zstd \
     net-tools \
     netplan.io \
-    fancontrol
+    fancontrol \
+    vim
 
 if [[ "$DEBARCH" == "arm64" ]]; then
     sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
@@ -183,10 +184,11 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    eth0:
+    mgmt0:
+      match:
+        name: en*
       dhcp4: true
-    ens3:
-      dhcp4: true
+      set-name: mgmt0
 EOF
 
 sudo mkdir -p "$ROOTFS/etc/systemd/system/docker.service.d"
@@ -221,6 +223,7 @@ VERSION="$NOS_VERSION"
 ID=$NOS_NAME
 ID_LIKE=debian
 VERSION_ID="$NOS_VERSION"
+VERSION_CODENAME=$SUITE
 PRETTY_NAME="$NOS_NAME $NOS_VERSION"
 HOME_URL="https://github.com/example/oniecraft"
 SUPPORT_URL="https://github.com/example/oniecraft"

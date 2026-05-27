@@ -105,6 +105,8 @@ $(STAMPDIR)/image: $(STAMPDIR)/rootfs $(STAMPDIR)/kernel $(STAMPDIR)/packages | 
 		--kernel-dir "$(KERNEL_DIR)" \
 		--nos-name "$(NOS_NAME)" \
 		--nos-version "$(NOS_VERSION)" \
+		--git-branch "$(GIT_BRANCH)" \
+		--git-rev "$(GIT_REV)" \
 		--part-size "$(PART_SIZE_MB)" \
 		--output "$(BUILDDIR)/$(IMAGE_NAME)"
 	$(Q)touch $@

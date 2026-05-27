@@ -18,6 +18,9 @@ KERNEL_VERSION ?=
 KERNEL_PKG ?= linux-sonic
 KERNEL_PPA ?= ppa:canonical-kernel-team/bootstrap
 
+GIT_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)
+GIT_REV ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+
 INCLUDE_DEBS ?=
 INCLUDE_SOURCE_PKGS ?=
 
