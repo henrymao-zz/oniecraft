@@ -180,7 +180,10 @@ sudo mkdir -p "$ROOTFS/lib/oniecraft"
 sudo touch "$ROOTFS/lib/oniecraft/firsttime"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-sudo cp "$SCRIPT_DIR/../files/rc.local" "$ROOTFS/etc/rc.local"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+FILES_DIR="$PROJECT_DIR/files"
+
+sudo cp "$FILES_DIR/rc.local" "$ROOTFS/etc/rc.local"
 sudo chmod +x "$ROOTFS/etc/rc.local"
 
 sudo chroot "$ROOTFS" systemctl enable ssh
@@ -190,41 +193,15 @@ sudo chroot "$ROOTFS" systemctl enable bird
 sudo chroot "$ROOTFS" systemctl enable snapd.socket 2>/dev/null || true
 sudo chroot "$ROOTFS" systemctl enable apparmor 2>/dev/null || true
 
-sudo tee "$ROOTFS/etc/bird/bird.conf" >/dev/null <<'BIRDCONF'
-log syslog all;
-
-router id 127.0.0.1;
-
-protocol device {
-}
-
-protocol kernel {
-    ipv4 {
-        import none;
-        export all;
-    };
-}
-BIRDCONF
+sudo mkdir -p "$ROOTFS/etc/bird"
+sudo cp "$FILES_DIR/etc/bird/bird.conf" "$ROOTFS/etc/bird/bird.conf"
 
 sudo mkdir -p "$ROOTFS/etc/netplan"
-sudo tee "$ROOTFS/etc/netplan/01-netcfg.yaml" >/dev/null <<'EOF'
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    mgmt0:
-      match:
-        name: en*
-      dhcp4: true
-      set-name: mgmt0
-EOF
+sudo cp "$FILES_DIR/etc/netplan/01-netcfg.yaml" "$ROOTFS/etc/netplan/01-netcfg.yaml"
 
 sudo mkdir -p "$ROOTFS/etc/systemd/system/docker.service.d"
-sudo tee "$ROOTFS/etc/systemd/system/docker.service.d/override.conf" >/dev/null <<'EOF'
-[Service]
-ExecStart=
-ExecStart=/usr/bin/dockerd --data-root /var/lib/docker
-EOF
+sudo cp "$FILES_DIR/etc/systemd/system/docker.service.d/override.conf" \
+    "$ROOTFS/etc/systemd/system/docker.service.d/override.conf"
 
 if [[ "$INCLUDE_DOCKER" == "y" ]]; then
     sudo chroot "$ROOTFS" systemctl enable docker
