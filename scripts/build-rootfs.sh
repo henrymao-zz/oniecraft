@@ -127,7 +127,8 @@ sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
     snapd \
     fancontrol \
     vim \
-    bird3
+    bird3 \
+    cloud-init
 
 if [[ "$DEBARCH" == "arm64" ]]; then
     sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
@@ -192,12 +193,14 @@ sudo chroot "$ROOTFS" systemctl enable systemd-networkd
 sudo chroot "$ROOTFS" systemctl enable bird
 sudo chroot "$ROOTFS" systemctl enable snapd.socket 2>/dev/null || true
 sudo chroot "$ROOTFS" systemctl enable apparmor 2>/dev/null || true
+sudo chroot "$ROOTFS" systemctl enable cloud-init-local.service 2>/dev/null || true
+sudo chroot "$ROOTFS" systemctl enable cloud-init-init.service 2>/dev/null || true
+sudo chroot "$ROOTFS" systemctl enable cloud-config.service 2>/dev/null || true
+sudo chroot "$ROOTFS" systemctl enable cloud-final.service 2>/dev/null || true
 
-sudo mkdir -p "$ROOTFS/etc/bird"
-sudo cp "$FILES_DIR/etc/bird/bird.conf" "$ROOTFS/etc/bird/bird.conf"
-
-sudo mkdir -p "$ROOTFS/etc/netplan"
-sudo cp "$FILES_DIR/etc/netplan/01-netcfg.yaml" "$ROOTFS/etc/netplan/01-netcfg.yaml"
+sudo mkdir -p "$ROOTFS/etc/cloud/cloud.cfg.d"
+sudo cp "$FILES_DIR/etc/cloud/cloud.cfg.d/99-oniecraft-nocloud.cfg" \
+    "$ROOTFS/etc/cloud/cloud.cfg.d/99-oniecraft-nocloud.cfg"
 
 sudo mkdir -p "$ROOTFS/etc/systemd/system/docker.service.d"
 sudo cp "$FILES_DIR/etc/systemd/system/docker.service.d/override.conf" \
