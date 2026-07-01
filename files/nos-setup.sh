@@ -74,18 +74,25 @@ case "$ONIE_PLATFORM" in
 esac
 
 # ---------------------------------------------------------------------------
-# Symlink /usr/share/sonic/hwsku -> /usr/share/sonic/device/$onie_platform/
+# Symlink /usr/share/sonic/hwsku -> /usr/share/sonic/device/$onie_platform/$DEFAULT_SKU
 # ---------------------------------------------------------------------------
 if [ -n "$ONIE_PLATFORM" ]; then
-    HWSKU_SRC="/usr/share/sonic/device/$ONIE_PLATFORM"
+    DEVICE_DIR="/usr/share/sonic/device/$ONIE_PLATFORM"
     HWSKU_DST="/usr/share/sonic/hwsku"
-    if [ -d "$HWSKU_SRC" ]; then
-        mkdir -p "$(dirname "$HWSKU_DST")"
-        rm -f "$HWSKU_DST"
-        ln -s "$HWSKU_SRC" "$HWSKU_DST"
-        echo "nos-setup: linked $HWSKU_DST -> $HWSKU_SRC"
+    DEFAULT_SKU_FILE="$DEVICE_DIR/default_sku"
+    if [ -f "$DEFAULT_SKU_FILE" ]; then
+        DEFAULT_SKU=$(awk '{print $1}' "$DEFAULT_SKU_FILE")
+        HWSKU_SRC="$DEVICE_DIR/$DEFAULT_SKU"
+        if [ -d "$HWSKU_SRC" ]; then
+            mkdir -p "$(dirname "$HWSKU_DST")"
+            rm -f "$HWSKU_DST"
+            ln -s "$HWSKU_SRC" "$HWSKU_DST"
+            echo "nos-setup: linked $HWSKU_DST -> $HWSKU_SRC"
+        else
+            echo "nos-setup: WARNING, $HWSKU_SRC not present, skipping hwsku symlink"
+        fi
     else
-        echo "nos-setup: WARNING, $HWSKU_SRC not present, skipping hwsku symlink"
+        echo "nos-setup: WARNING, $DEFAULT_SKU_FILE not present, skipping hwsku symlink"
     fi
 else
     echo "nos-setup: WARNING, onie_platform is empty, skipping hwsku symlink"
