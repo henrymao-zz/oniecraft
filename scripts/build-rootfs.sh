@@ -158,6 +158,10 @@ sudo rm -rf "$ROOTFS/var/lib/apt/lists/"*
 sudo rm -rf "$ROOTFS/var/cache/apt/archives/"*
 sudo rm -rf "$ROOTFS/var/cache/apt/*.bin"
 
+# Generate locales so cloud-init's locale module doesn't fail on boot.
+sudo chroot "$ROOTFS" bash -c "sed -i 's/^# *\(en_US.UTF-8 UTF-8\)/\1/; s/^# *\(C.UTF-8 UTF-8\)/\1/' /etc/locale.gen 2>/dev/null; locale-gen"
+sudo chroot "$ROOTFS" bash -c "echo 'LANG=en_US.UTF-8' > /etc/default/locale"
+
 sudo chroot "$ROOTFS" bash -c "echo 'root:root' | chpasswd"
 sudo chroot "$ROOTFS" passwd -l root
 

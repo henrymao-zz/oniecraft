@@ -72,9 +72,6 @@ write_entry() {
         write_entry "$target" "$src" "$perms"
     done
 
-    echo "      manage_resolv_conf: true"
-    echo "      resolv_conf:"
-    echo "        nameservers: ['1.1.1.1']"
     echo "      runcmd:"
     echo "        - /usr/sbin/nos-setup.sh"
 
