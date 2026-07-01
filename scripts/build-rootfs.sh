@@ -128,7 +128,8 @@ sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
     fancontrol \
     vim \
     bird3 \
-    cloud-init
+    cloud-init \
+    software-properties-common
 
 if [[ "$DEBARCH" == "arm64" ]]; then
     sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
