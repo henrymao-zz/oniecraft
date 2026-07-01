@@ -36,40 +36,37 @@ elif [ -r /host/machine.conf ]; then
 fi
 
 ONIE_PLATFORM="${onie_platform:-}"
+ONIE_SWITCH_ASIC="${onie_switch_asic:-}"
 echo "nos-setup: onie_platform=${ONIE_PLATFORM:-unknown}"
+echo "nos-setup: onie_switch_asic=${ONIE_SWITCH_ASIC:-unknown}"
 
 # ---------------------------------------------------------------------------
-# Add the Ubuntu NOS PPA and install platform-independent packages.
+# Install platform-specific packages from the local filesystem.
+# The .debs are staged at build time under /usr/share/sonic/platform/<dir>/.
 # ---------------------------------------------------------------------------
-echo "nos-setup: adding PPA ppa:henrymao/ubuntu-nos..."
-if command -v add-apt-repository >/dev/null 2>&1; then
-    add-apt-repository -y ppa:henrymao/ubuntu-nos
-else
-    # Fallback for minimal images without software-properties-common.
-    . /etc/os-release 2>/dev/null || true
-    SUITE="${VERSION_CODENAME:-noble}"
-    cat > /etc/apt/sources.list.d/henrymao-ubuntu-nos.list <<EOF
-deb http://ppa.launchpad.net/henrymao/ubuntu-nos/ubuntu ${SUITE} main
-# deb-src http://ppa.launchpad.net/henrymao/ubuntu-nos/ubuntu ${SUITE} main
-EOF
-    if command -v apt-key >/dev/null 2>&1; then
-        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 2>/dev/null || true
+# Install opennsl only on Broadcom (bcm) switch ASICs.
+if [ "$ONIE_SWITCH_ASIC" = "bcm" ]; then
+    BCM_DIR="/usr/share/sonic/platform/bcm"
+    echo "nos-setup: installing opennsl from $BCM_DIR..."
+    if ls "$BCM_DIR"/opennsl_*.deb >/dev/null 2>&1; then
+        dpkg -i "$BCM_DIR"/opennsl_*.deb
+    else
+        echo "nos-setup: WARNING, no opennsl .deb found in $BCM_DIR"
     fi
+else
+    echo "nos-setup: onie_switch_asic is '${ONIE_SWITCH_ASIC:-unknown}', skipping opennsl"
 fi
 
-echo "nos-setup: updating apt cache..."
-apt-get update
-
-echo "nos-setup: installing socat, sswsyncd, opennsl, device-data..."
-apt-get install -y --no-install-recommends socat sswsyncd opennsl device-data
-
-# ---------------------------------------------------------------------------
-# Install platform-specific platform-modules package based on onie_platform.
-# ---------------------------------------------------------------------------
+# Install platform-modules for the detected platform.
+PLATFORM_DIR="/usr/share/sonic/platform/$ONIE_PLATFORM"
 case "$ONIE_PLATFORM" in
     x86_64-dellemc_s5232f_c3538-r0)
-        echo "nos-setup: installing platform-modules-s5232f for $ONIE_PLATFORM..."
-        apt-get install -y --no-install-recommends platform-modules-s5232f
+        echo "nos-setup: installing platform-modules-s5232f from $PLATFORM_DIR..."
+        if ls "$PLATFORM_DIR"/platform-modules-s5232f_*.deb >/dev/null 2>&1; then
+            dpkg -i "$PLATFORM_DIR"/platform-modules-s5232f_*.deb
+        else
+            echo "nos-setup: WARNING, no platform-modules .deb found in $PLATFORM_DIR"
+        fi
         ;;
     *)
         echo "nos-setup: no platform-modules package mapped for '${ONIE_PLATFORM:-unknown}'"

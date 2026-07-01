@@ -136,6 +136,32 @@ if [[ "$DEBARCH" == "arm64" ]]; then
         u-boot-tools
 fi
 
+# Add the Ubuntu NOS PPA and install platform-independent NOS packages.
+echo "Adding PPA ppa:henrymao/ubuntu-nos..."
+sudo chroot "$ROOTFS" add-apt-repository -y ppa:henrymao/ubuntu-nos
+sudo chroot "$ROOTFS" apt-get update
+
+echo "Installing socat, sswsyncd, device-data..."
+sudo chroot "$ROOTFS" apt-get install -y --no-install-recommends \
+    socat sswsyncd device-data
+
+# Download the platform-modules .deb from the PPA and stage it on the rootfs
+# so nos-setup.sh can install it at first boot without network access.
+S5232F_PLATFORM_DIR="$ROOTFS/usr/share/sonic/platform/x86_64-dellemc_s5232f_c3538-r0"
+sudo mkdir -p "$S5232F_PLATFORM_DIR"
+echo "Downloading platform-modules-s5232f .deb from PPA..."
+sudo chroot "$ROOTFS" bash -c "cd /tmp && apt-get download platform-modules-s5232f"
+sudo mv "$ROOTFS"/tmp/platform-modules-s5232f_*.deb "$S5232F_PLATFORM_DIR/"
+sudo chown root:root "$S5232F_PLATFORM_DIR"/*.deb
+
+# Download the opennsl .deb from the PPA and stage it under the bcm platform dir.
+BCM_PLATFORM_DIR="$ROOTFS/usr/share/sonic/platform/bcm"
+sudo mkdir -p "$BCM_PLATFORM_DIR"
+echo "Downloading opennsl .deb from PPA..."
+sudo chroot "$ROOTFS" bash -c "cd /tmp && apt-get download opennsl"
+sudo mv "$ROOTFS"/tmp/opennsl_*.deb "$BCM_PLATFORM_DIR/"
+sudo chown root:root "$BCM_PLATFORM_DIR"/*.deb
+
 if [[ "$INCLUDE_DOCKER" == "y" ]]; then
     echo "Installing Docker..."
     sudo chroot "$ROOTFS" bash -c '
