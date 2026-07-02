@@ -115,8 +115,8 @@ sudo find "$ROOTFS" -ignore_readdir_race -name "*.pyc" -delete 2>/dev/null || tr
 sudo find "$ROOTFS" -ignore_readdir_race -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 sudo find "$ROOTFS" -ignore_readdir_race -name "*.a" -not -path "*/lib/modules/*" -delete 2>/dev/null || true
 sudo find "$ROOTFS" -ignore_readdir_race -name "*.la" -delete 2>/dev/null || true
-sudo find "$ROOTFS/usr/share/locale" -ignore_readdir_race -mindepth 1 -maxdepth 1 -not -name "en_US" -not -name "C" -exec rm -rf {} + 2>/dev/null || true
-sudo find "$ROOTFS/usr/lib/locale" -ignore_readdir_race -mindepth 1 -maxdepth 1 -not -name "en_US" -not -name "C" -exec rm -rf {} + 2>/dev/null || true
+sudo find "$ROOTFS/usr/share/locale" -ignore_readdir_race -mindepth 1 -maxdepth 1 -not -name "en_US" -not -name "C" -not -iname "c.utf*" -exec rm -rf {} + 2>/dev/null || true
+sudo find "$ROOTFS/usr/lib/locale" -ignore_readdir_race -mindepth 1 -maxdepth 1 -not -name "en_US" -not -name "C" -not -iname "c.utf*" -exec rm -rf {} + 2>/dev/null || true
 
 echo "Removing unnecessary firmware..."
 # Aggressive firmware pruning for network switch appliance
